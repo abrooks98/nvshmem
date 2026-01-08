@@ -66,11 +66,7 @@ message(STATUS "CMAKE_CUDA_COMPILER: ${CMAKE_CUDA_COMPILER}")
 message(STATUS "NVSHMEM_PREFIX: ${NVSHMEM_PREFIX}")
 message(STATUS "NVSHMEM_DEBUG: ${NVSHMEM_DEBUG}")
 
-if(CUDAToolkit_VERSION_MAJOR LESS 13)
-  set(LIB_CXX_STANDARD 11)
-else()
-  set(LIB_CXX_STANDARD 17)
-endif()
+set(LIB_CXX_STANDARD ${CMAKE_CXX_STANDARD})
 
 # CUTLASS needs C++ 17
 if(NVSHMEM_BUILD_WITH_CUTLASS)
@@ -129,6 +125,8 @@ set_target_properties(nvshmem_device
 
 
 macro(nvshmem_library_set_base_config LIBNAME)
+  target_compile_features(${LIBNAME} PUBLIC cxx_std_17)
+
   target_compile_definitions(${LIBNAME}
     PRIVATE $<$<CONFIG:Debug>:_NVSHMEM_DEBUG;NVSHMEM_IBGDA_DEBUG>
     $<IF:$<STREQUAL:"${CMAKE_HOST_SYSTEM_PROCESSOR}","x86_64">,NVSHMEM_X86_64,>

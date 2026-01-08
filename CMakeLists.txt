@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_config")
 
+include(NVSHMEMCxxStandard)
 include(NVSHMEMEnv)
 include(CMakePackageConfigHelpers)
 

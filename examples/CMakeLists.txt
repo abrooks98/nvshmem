@@ -115,11 +115,7 @@ if(NOT SubBuild)
 #  endif()
 endif()
 
-if(CUDAToolkit_VERSION_MAJOR LESS 13)
-  set(EXAMPLES_CXX_STANDARD 11)
-else()
-  set(EXAMPLES_CXX_STANDARD 17)
-endif()
+set(EXAMPLES_CXX_STANDARD ${CMAKE_CXX_STANDARD})
 
 add_library(nvshmem_example_helper INTERFACE)
 target_link_libraries(nvshmem_example_helper INTERFACE CUDA::cudart CUDA::cuda_driver)

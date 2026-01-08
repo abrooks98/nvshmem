@@ -7,6 +7,7 @@
 #ifndef _TRANSPORT_MLX5_COMMON_H
 #define _TRANSPORT_MLX5_COMMON_H
 
+#include <infiniband/mlx5dv.h>
 #include <stdint.h>  // IWYU pragma: keep
 // IWYU pragma: no_include <bits/stdint-uintn.h>
 

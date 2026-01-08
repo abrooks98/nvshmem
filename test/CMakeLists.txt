@@ -130,17 +130,8 @@ if(NOT SubBuild)
   else()
 endif()
 
-  if(CUDAToolkit_VERSION_MAJOR LESS 13)
-    set(TEST_CXX_STANDARD 11)
-    set(TEST_CXX_ARG c++11)
-  else()
-    set(TEST_CXX_STANDARD 17)
-    set(TEST_CXX_ARG c++17)
-  endif()
-
-  # Tile-granular APIs need C++ 17
-  set(TEST_CXX_STANDARD 17)
-  set(TEST_CXX_ARG c++17)
+  set(TEST_CXX_STANDARD ${CMAKE_CXX_STANDARD})
+  set(TEST_CXX_ARG "c++${CMAKE_CXX_STANDARD}")
 
 foreach(ARCH ${CMAKE_CUDA_ARCHITECTURES})
   string(REGEX REPLACE "-(real|virtual)" "" CLEANED_ARCH "${ARCH}")

@@ -131,14 +131,7 @@ if(NOT SubBuild)
   endif()
 endif()
 
-if(CUDAToolkit_VERSION_MAJOR LESS 13)
-  set(PERFTEST_CXX_STANDARD 11)
-else()
-  set(PERFTEST_CXX_STANDARD 17)
-endif()
-
-# Tile-granular API examples need C++ 17
-set(PERFTEST_CXX_STANDARD 17)
+set(PERFTEST_CXX_STANDARD ${CMAKE_CXX_STANDARD})
 
 add_subdirectory(common)
 
@@ -150,13 +143,8 @@ else()
   set(NVSHMEM_PTX_ARCH "ptx82")
 endif()
 
-if(CUDAToolkit_VERSION_MAJOR LESS 13)
-  set(BITCODE_CXX_STD "c++11")
-  set(CUBIN_CXX_STD "c++11")
-else()
-  set(BITCODE_CXX_STD "c++17")
-  set(CUBIN_CXX_STD "c++17")
-endif()
+set(BITCODE_CXX_STD "c++${CMAKE_CXX_STANDARD}")
+set(CUBIN_CXX_STD "c++${CMAKE_CXX_STANDARD}")
 
 if (NOT SubBuild)
   configure_file(${NVSHMEM_PERFTEST_TLD}/../src/include/non_abi/device/pt-to-pt/transfer_device.cuh.in

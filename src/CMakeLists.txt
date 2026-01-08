@@ -32,6 +32,8 @@ ExternalProject_Add(nvshmem_device_project
                                 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                                 -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                                 -DCMAKE_CUDA_HOST_COMPILER=${CMAKE_CUDA_HOST_COMPILER}
+                                -DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+                                -DCMAKE_CUDA_STANDARD=${CMAKE_CUDA_STANDARD}
                                 -DPROJECT_VERSION=${PROJECT_VERSION}
 				$ENV{CMAKE_CCACHE_FLAGS}
                     CMAKE_CACHE_ARGS ${my_cmake_cache_args}
@@ -45,11 +47,7 @@ set_property(TARGET nvshmem_device PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BI
 
 ## Start bitcode library configurations
 
-if(CUDAToolkit_VERSION_MAJOR LESS 13)
-  set(LIB_CXX_STANDARD 11)
-else()
-  set(LIB_CXX_STANDARD 17)
-endif()
+set(LIB_CXX_STANDARD 17)
 
 # CUTLASS needs C++ 17
 if(NVSHMEM_BUILD_WITH_CUTLASS)
@@ -67,11 +65,7 @@ if(NVSHMEM_BUILD_BITCODE_LIBRARY)
     set(BITCODE_LIB_ARCH "sm_90")
   endif()
 
-  if(CUDAToolkit_VERSION_MAJOR LESS 13)
-    set(BITCODE_CXX_STD "c++11")
-  else()
-    set(BITCODE_CXX_STD "c++17")
-  endif()
+  set(BITCODE_CXX_STD "c++${CMAKE_CXX_STANDARD}")
 
   # Note - today we do optimization to avoid having a too large bitcode file. There are, as of clang 18, some existing
   # limitations around compiling device libraries which make optimizing this library fine. Once these issues are fixed
@@ -133,11 +127,7 @@ if(NVSHMEM_BUILD_LTOIR_LIBRARY)
     # CUDA >= 12.0, so we can build LTOIR
     set(LTOIR_LIB_ARCH sm_80)
 
-  if(CUDAToolkit_VERSION_MAJOR LESS 13)
-    set(LTOIR_CXX_STD "c++11")
-  else()
-    set(LTOIR_CXX_STD "c++17")
-  endif()
+  set(LTOIR_CXX_STD "c++${CMAKE_CXX_STANDARD}")
 
   # ––– paths –––
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
@@ -273,7 +263,7 @@ set(ACTIVE_BOOTSTRAPS ${ACTIVE_BOOTSTRAPS} nvshmem_bootstrap_uid)
 set_target_properties(nvshmem_bootstrap_uid
                       PROPERTIES C_STANDARD 11
                       CXX_STANDARD_REQUIRED ON
-                      CXX_STANDARD 11)
+                      CXX_STANDARD "${LIB_CXX_STANDARD}")
 target_sources(nvshmem_bootstrap_uid PRIVATE modules/bootstrap/common/bootstrap_util.cpp
                                              modules/bootstrap/uid/ncclSocket/ncclsocket_socket.cpp
 					                                   modules/bootstrap/uid/bootstrap_uid.cpp)
@@ -292,6 +282,10 @@ set_target_properties(${ACTIVE_BOOTSTRAPS}
                       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
                       VERSION ${BOOTSTRAP_VERSION_MAJOR}.${BOOTSTRAP_VERSION_MINOR}.${BOOTSTRAP_VERSION_PATCH}
                       SOVERSION ${BOOTSTRAP_VERSION_MAJOR})
+
+foreach(BOOTSTRAP ${ACTIVE_BOOTSTRAPS})
+  target_compile_features(${BOOTSTRAP} PUBLIC cxx_std_17)
+endforeach()
 
 # End bootstrap definitions
 
@@ -315,6 +309,8 @@ set_target_properties(nvshmem_host
 )
 
 macro(nvshmem_library_set_base_config LIBNAME)
+  target_compile_features(${LIBNAME} PUBLIC cxx_std_17)
+
   target_compile_definitions(${LIBNAME}
     PRIVATE $<$<CONFIG:Debug>:_NVSHMEM_DEBUG;NVSHMEM_IBGDA_DEBUG>
     $<IF:$<STREQUAL:"${CMAKE_HOST_SYSTEM_PROCESSOR}","x86_64">,NVSHMEM_X86_64,>
@@ -631,7 +627,7 @@ endif()
 set_target_properties(${ACTIVE_TRANSPORTS}
                       PROPERTIES PREFIX ""
                       CXX_STANDARD_REQUIRED ON
-                      CXX_STANDARD 11
+                      CXX_STANDARD "${LIB_CXX_STANDARD}"
                       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
                       VERSION ${TRANSPORT_VERSION_MAJOR}.${TRANSPORT_VERSION_MINOR}.${TRANSPORT_VERSION_PATCH}
                       SOVERSION ${TRANSPORT_VERSION_MAJOR})
@@ -811,6 +807,9 @@ foreach(SHARE ${BOOTSTRAP_CMAKE_EXPORTS})
   configure_file(modules/bootstrap/${SHARE}.in ${CMAKE_CURRENT_BINARY_DIR}/share/src/bootstrap-plugins/${SHARE} @ONLY)
 endforeach(SHARE ${BOOTSTRAP_CMAKE_EXPORTS})
 
+configure_file(${CMAKE_SOURCE_DIR}/cmake_config/NVSHMEMCxxStandard.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/share/src/bootstrap-plugins/cmake_config/NVSHMEMCxxStandard.cmake COPYONLY)
+
 configure_file(${CMAKE_SOURCE_DIR}/nvshmem_transport.sym
                ${CMAKE_CURRENT_BINARY_DIR}/share/src/transport-plugins/nvshmem_transport.sym COPYONLY)
 
@@ -871,6 +870,9 @@ set(TRANSPORT_CMAKE_EXPORTS
 foreach(SHARE ${TRANSPORT_CMAKE_EXPORTS})
   configure_file(modules/transport/${SHARE}.in ${CMAKE_CURRENT_BINARY_DIR}/share/src/transport-plugins/${SHARE} @ONLY)
 endforeach(SHARE ${TRANSPORT_CMAKE_EXPORTS})
+
+configure_file(${CMAKE_SOURCE_DIR}/cmake_config/NVSHMEMCxxStandard.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/share/src/transport-plugins/cmake_config/NVSHMEMCxxStandard.cmake COPYONLY)
 # end share configuration
 
 # start custom builds for nvshmem packages
