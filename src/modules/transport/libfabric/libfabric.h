@@ -532,6 +532,8 @@ typedef struct {
     bool use_staged_atomics = false;
     bool use_auto_progress = false;
     std::recursive_mutex gdrRecvMutex;
+    int max_request_batch_size;
+    size_t max_completions_per_poll;
 } nvshmemt_libfabric_state_t;
 
 typedef struct {
