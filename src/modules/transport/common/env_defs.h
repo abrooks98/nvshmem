@@ -103,6 +103,8 @@ NVSHMEMI_ENV_DEF(LIBFABRIC_MAX_NIC_PER_PE, int, 16, NVSHMEMI_ENV_CAT_TRANSPORT,
 NVSHMEMI_ENV_DEF(LIBFABRIC_PROXY_REQUEST_BATCH_MAX, int, 32, NVSHMEMI_ENV_CAT_TRANSPORT,
                  "Maximum number of requests that the libfabric transport processes per queue "
                  "in a single iteration of the progress loop.")
+NVSHMEMI_ENV_DEF(LIBFABRIC_ENABLE_BATCH_RMA, bool, true, NVSHMEMI_ENV_CAT_TRANSPORT,
+                 "Toggle support for batched RMA with FI_MORE.")
 
 #if defined(NVSHMEM_IBGDA_SUPPORT) || defined(NVSHMEM_ENV_ALL)
 /** GPU-initiated communication **/

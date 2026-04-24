@@ -66,6 +66,12 @@ typedef enum {
     NVSHMEM_TRANSPORT_LIB_CODE_MAX = INT_MAX,
 } nvshmem_transport_inline_lib_code_type_t;
 
+typedef enum {
+    NVSHMEM_TRANSPORT_BATCH_FLAG_NONE = 0,
+    NVSHMEM_TRANSPORT_BATCH_FLAG_RMA = 1,
+    NVSHMEM_TRANSPORT_BATCH_FLAG_MAX = INT_MAX,
+} nvshmem_transport_batch_flag_t;
+
 typedef struct nvshmem_transport_pe_info {
     pcie_id_t pcie_id;
     int pe;
@@ -153,6 +159,12 @@ struct nvshmem_transport_host_ops {
     int (*add_device_remote_mem_handles)(struct nvshmem_transport *transport, int transport_stride,
                                          nvshmem_mem_handle_t *mem_handles, uint64_t heap_offset,
                                          size_t size);
+    /*
+     * Optional: hint that the next call on this qp_index is part of a batch of similar ops
+     * indicated by flags. batch_hint == NULL means the transport does not support batching hints.
+     */
+    void (*batch_hint)(struct nvshmem_transport *transport, int qp_index,
+                       nvshmem_transport_batch_flag_t flags);
 };
 
 typedef struct nvshmem_transport {
